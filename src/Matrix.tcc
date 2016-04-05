@@ -187,6 +187,31 @@ void Mat<T>::addColumns(int numColumns, T value)
     }
 }
 
+
+//was doing addcolumns for matrices for polynomial terms in logit
+template <typename T>
+void Mat<T>::addColumns(Mat<T> mat)
+{
+    if(mat.rows != rows)
+    {
+        std::cout << "Invalid matrix operation 'addColumns' (Row mismatch):\n"
+                    << "[" << mat.rows << " x " << mat.columns << "] o [" << rows << " x " << columns << "]\n";
+        return;
+    }
+    for(int i = 0; i < mat.columns; ++i)
+    {
+        int elem = 0;
+        int j = 0;
+        do
+        {
+            matrix.insert(matrix.begin()+columns+(j * columns)+elem, mat.matrix.at(j));
+            ++elem;
+            ++j;
+        }while(j < rows);
+        ++columns;
+    }
+}
+
 template <typename T>
 Mat<T> Mat<T>::getColumns(int begin, int end)
 {
