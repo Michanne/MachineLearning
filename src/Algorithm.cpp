@@ -1,5 +1,45 @@
 #include "../include/Algorithm.h"
 
+bool Data::parse(std::string filename, char delims, std::vector<Option> options)
+{
+    std::cout << "Parsing file:\t[" << filename << "]\n";
+    std::ifstream file(filename);
+    if(file.is_open())
+    {
+        // Split each line into X and Y values
+        std::string line;
+
+        while(std::getline(file, line))
+        {
+            // All columns before the last become X valued
+            std::stringstream l(line);
+            std::vector<std::string> tokens;
+            std::string s;
+            while(std::getline(l, s, delims))
+            {
+                tokens.push_back(s);
+            }
+            for(unsigned i = 0; i < tokens.size()-1; ++i)
+            {
+                X.matrix.push_back(std::stod(tokens[i]));
+            }
+            Y.matrix.push_back(std::stod(tokens[tokens.size()-1]));
+            Y.columns = 1;
+            X.columns = tokens.size()-1;
+            ++X.rows;
+            tokens.clear();
+        }
+
+        Y.rows = X.rows;
+
+        this->options = options;
+
+        return true;
+    }
+
+    else return false;
+}
+
 LogisticRegressionModel::LogisticRegressionModel()
 {
     data.alpha = 1;
@@ -113,54 +153,6 @@ double LogisticRegressionModel::test(Mat<double> validation_set)
     return correct.sum()/correct.vector.size();
 }
 
-bool LogisticRegressionModel::parse(std::string filename, char delims, std::vector<Option> options)
-{
-    std::cout << "Parsing file:\t[" << filename << "]\n";
-    std::ifstream file(filename);
-    if(file.is_open())
-    {
-        // Split each line into X and Y values
-        std::string line;
-
-        while(std::getline(file, line))
-        {
-            // All columns before the last become X valued
-            std::stringstream l(line);
-            std::vector<std::string> tokens;
-            std::string s;
-            while(std::getline(l, s, delims))
-            {
-                tokens.push_back(s);
-            }
-            for(unsigned i = 0; i < tokens.size()-1; ++i)
-            {
-                data.X.matrix.push_back(std::stod(tokens[i]));
-            }
-            data.Y.matrix.push_back(std::stod(tokens[tokens.size()-1]));
-            data.Y.columns = 1;
-            data.X.columns = tokens.size()-1;
-            ++data.X.rows;
-            tokens.clear();
-        }
-
-        data.Y.rows = data.X.rows;
-
-        for(auto i : options)
-        {
-            parseOption(i, data);
-        }
-
-        // Initialize thetas and add 1's columns
-        data.theta.addColumns(data.X.columns + 1, 0);
-        data.X.addColumns(1, 1);
-        data.theta.rows = 1;
-
-        return true;
-    }
-
-    else return false;
-}
-
 void LogisticRegressionModel::scaleFeatures(Data& d)
 {
     std::cout << "Scaling features...\n";
@@ -212,6 +204,20 @@ void LogisticRegressionModel::expressFeatures(Data& d, int degree, double regula
     d.X = temp;
     d.lambda = regularization_term;
     d.regularized = true;
+}
+
+void LogisticRegressionModel::load(Data& data)
+{
+    for(auto i : data.options)
+    {
+        parseOption(i, data);
+    }
+    // Initialize thetas and add 1's columns
+    data.theta.addColumns(data.X.columns + 1, 0);
+    data.X.addColumns(1, 1);
+    data.theta.rows = 1;
+
+    this->data = data;
 }
 
 void LogisticRegressionModel::parseOption(Option opt, Data& d)

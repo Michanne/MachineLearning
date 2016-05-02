@@ -10,6 +10,7 @@
 
 template <typename T>
 struct Vec;
+struct Option;
 
 template <typename T>
 struct Mat
@@ -77,6 +78,10 @@ struct Data
     bool regularized= false;
     bool scaled     = false;
     bool printCosts = false;
+    std::vector<Option> options;
+
+    ///Parses a file
+    bool parse(std::string filename, char delims = ' ', std::vector<Option> options = std::vector<Option>());
 };
 
 class Statistics
@@ -193,10 +198,8 @@ public:
     ///Validates the accuracy of @theta using a validation set
     double test(Mat<double> validation_set);
 
-    ///Parses a file
-    bool parse(std::string filename, char delims = ' ', std::vector<Option> options = std::vector<Option>());
-
     ///Option functions
+    void load(Data&);
     void parseOption(Option, Data&);
     void scaleFeatures(Data&);
     void expressFeatures(Data&, int, double);
